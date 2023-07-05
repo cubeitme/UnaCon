@@ -1,0 +1,110 @@
+# run this file as python!
+
+from colorama import init, Fore, Back, Style
+import os
+import time
+
+init()
+
+links = {}
+vals = {}
+
+# log style
+
+def info(arg):
+	print(Back.GREEN + "info" + Style.RESET_ALL + " " + Fore.GREEN + arg + Style.RESET_ALL)
+
+def warn(arg):
+	print(Back.YELLOW + "Warn" + Style.RESET_ALL + " " + Fore.YELLOW + arg + Style.RESET_ALL)
+	
+def err(arg):
+	print(Back.RED + "Err" + Style.RESET_ALL + " " + Fore.RED + arg + Style.RESET_ALL)
+	
+# other funs
+
+def boot(bootfile, printlog=False, logas=info):
+	try:
+		open(bootfile, "r+")
+		if (printlog == True):
+			logas(f"Opened!")
+			logas(f"Run")
+		os.system(f"python3 {bootfile}")
+	except:
+		err(f"{bootfile} not found")
+def loop(loopfile, delay=0.2, printlog=False, logas=info):
+	try:
+		open(loopfile, "r+")
+		if (printlog == True):
+			logas(f"Opened!")
+			logas(f"Run")
+		while True:
+			os.system(f"python3 {loopfile}")
+			time.sleep(delay)
+			
+	except:
+		err(f"{loopfile} not found")
+	
+def newfile(value, key):
+	links[key] = value
+	
+def addtofile(key, text):
+	links[key] += text
+	
+def writetofile(key, text):
+	links[key] = text
+
+try:
+	setup = open("setup.una", "r+")
+except:
+	print(Fore.RED + "setup.una  is not defined" + Style.RESET_ALL)
+	
+setup = setup.read().split("\n")
+
+for i in range(len(setup)):
+	stroke = setup[i]		# Stroke
+	
+	# Find elems
+	
+	if (stroke != ""):
+		prefix = stroke.split(">")[0]
+		
+		if (prefix != "**"):
+			text = stroke.split(">")[1]	# text
+			command = text.split(":")[0]
+			arg = text.split(":")[1]
+			
+			if (prefix == ";;"):		# Link prefix
+				if (command == "boot"):	# Create boot link
+					bootfile = arg
+					boot(arg)
+				elif (command == "loop"):	# Create loop link
+					loopfile = arg
+					loop(arg)
+				else:			# Create new file and link
+					newfile(arg, command)
+			
+			elif (prefix == "!+"):		# Add to file
+				addtofile(command, arg)
+			elif (prefix == "!"):		# Rewrite file
+				writetofile(command, arg)
+					
+			elif (prefix == "$"):		# Show prefix
+				if (command == "info"):	# Info
+					info(arg)
+				elif (command == "warn"): # Warning
+					warn(arg)
+				elif (command == "err"):  # Error
+					err(arg)
+				elif (command == "show"): # Just show
+					print(arg)
+				elif (command == "showlink"):
+					try:
+						print(links[arg])
+					except KeyError:
+						err(f"Incorrect link '{arg}'")
+				else:
+					err(f"Incorrect command on line {i+1}")
+			else:
+				err(f"Incorrect prefix on line {i+1}")
+		
+
